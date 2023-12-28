@@ -1,14 +1,15 @@
 #include QMK_KEYBOARD_H
 
-#define NUM_AUTO_KEYS 4
-#define AUTO_INTERVAL 50
+#define NUM_AUTO_KEYS 5
+#define AUTO_INTERVAL 40
 enum custom_keycodes {
     AUTO_UP = SAFE_RANGE,
     AUTO_DOWN,
     AUTO_LEFT,
-    AUTO_RGHT
+    AUTO_RGHT,
+    AUTO_TAB
 };
-const uint16_t kc[NUM_AUTO_KEYS] = {KC_UP, KC_DOWN, KC_LEFT, KC_RGHT};
+const uint16_t kc[NUM_AUTO_KEYS] = {KC_UP, KC_DOWN, KC_LEFT, KC_RGHT, KC_TAB};
 
 
 typedef struct {
@@ -24,6 +25,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case AUTO_DOWN:
         case AUTO_LEFT:
         case AUTO_RGHT:
+        case AUTO_TAB:
             if (record->event.pressed && !auto_keys[keycode - AUTO_UP].is_pressed) {
                 auto_keys[keycode - AUTO_UP].is_pressed = true;
                 auto_keys[keycode - AUTO_UP].timer = timer_read();
@@ -73,9 +75,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS),
 	[4] = LAYOUT_planck_mit(
                 KC_TRNS, KC_HOME, KC_PGUP, KC_PGDN, KC_END, KC_NO, KC_NO, RCS(KC_TAB), RALT(KC_LEFT), RALT(KC_RGHT), RCTL(KC_TAB), RCS(KC_EQL), 
-                KC_TRNS, KC_LEFT, KC_UP, KC_DOWN, KC_RGHT, KC_NO, KC_NO, AUTO_LEFT, AUTO_UP, AUTO_DOWN, AUTO_RGHT, RCTL(KC_MINS), 
+                AUTO_TAB, AUTO_LEFT, AUTO_UP, AUTO_DOWN, AUTO_RGHT, KC_NO, KC_NO, KC_LEFT, KC_UP, KC_DOWN, KC_RGHT, RCTL(KC_MINS), 
                 RCTL(KC_Z), KC_TRNS, RCTL(KC_X), RCTL(KC_C), RCTL(KC_V), KC_NO, KC_NO, RCTL(KC_LEFT), RCTL(KC_UP), RCTL(KC_DOWN), RCTL(KC_RGHT), KC_NO, 
-                KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_NO, KC_TRNS),
+                KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS),
 	[5] = LAYOUT_planck_mit(
                 KC_NO, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, KC_F11, 
                 KC_NO, KC_BRID, KC_VOLU, KC_VOLD, KC_BRIU, RGB_MOD, RGB_RMOD, BL_STEP, KC_NO, KC_NO, KC_NO, KC_F12, 
