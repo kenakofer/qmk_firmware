@@ -1,5 +1,23 @@
 #include QMK_KEYBOARD_H
 
+typedef union {
+  uint32_t raw;
+  struct {
+    uint16_t hundred_chars_typed;
+    uint16_t ten_backspaces_typed;
+  };
+} user_stats_t;
+
+user_stats_t user_stats;
+
+uint32_t chars_typed = 0;
+uint32_t backspaces_typed = 0;
+uint16_t last_keycode = 0;
+
+void eeconfig_init_user(void) {  // EEPROM is getting reset!
+    user_stats.raw = 0;
+}
+
 #define NUM_AUTO_KEYS 5
 #define AUTO_INTERVAL 40
 enum custom_keycodes {
@@ -7,7 +25,9 @@ enum custom_keycodes {
     AUTO_DOWN,
     AUTO_LEFT,
     AUTO_RGHT,
-    AUTO_TAB
+    AUTO_TAB,
+    ECHO_BACKS,
+    ECHO_CHARS
 };
 const uint16_t kc[NUM_AUTO_KEYS] = {KC_UP, KC_DOWN, KC_LEFT, KC_RGHT, KC_TAB};
 
@@ -34,6 +54,44 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 auto_keys[keycode - AUTO_UP].is_pressed = false;
             }
             return false;
+        case ECHO_BACKS:
+            if (record->event.pressed) {
+                // Send the number of backspaces typed as a string
+                char buf[8];
+                sprintf(buf, "%ld", backspaces_typed);
+                SEND_STRING(buf);
+            }
+            return false;
+        case ECHO_CHARS:
+            if (record->event.pressed) {
+                // Send the number of characters typed as a string
+                char buf[8];
+                sprintf(buf, "%ld", chars_typed);
+                SEND_STRING(buf);
+            }
+            return false;
+    }
+    if (record->event.pressed && keycode != last_keycode) {
+        if (keycode == KC_BSPC) {
+            backspaces_typed++;
+            if (backspaces_typed % 10 == 0) {
+                user_stats.ten_backspaces_typed++;
+                eeconfig_update_user(user_stats.raw);
+            }
+        } else if (keycode != KC_LCTL && keycode != KC_LSFT && keycode != KC_LALT && keycode != KC_LGUI
+                    && keycode != KC_RCTL && keycode != KC_RSFT && keycode != KC_RALT && keycode != KC_RGUI
+                    // Also ignore the layer keys
+                    && keycode != MO(2) && keycode != MO(3) && keycode != MO(4) && keycode != MO(5)
+                    // and arrow keys
+                    && keycode != KC_UP && keycode != KC_DOWN && keycode != KC_LEFT && keycode != KC_RGHT
+                    ) {
+            chars_typed++;
+            if (chars_typed % 100 == 0) {
+                user_stats.hundred_chars_typed++;
+                eeconfig_update_user(user_stats.raw);
+            }
+        }
+        last_keycode = keycode;
     }
     return true;
 }
@@ -73,6 +131,10 @@ void matrix_scan_user(void) {
 }
 
 void keyboard_post_init_user(void) {
+    user_stats.raw = eeconfig_read_user();
+    chars_typed = user_stats.hundred_chars_typed * 100 + 50;
+    backspaces_typed = user_stats.ten_backspaces_typed * 10 + 5;
+
     rgblight_mode_noeeprom(16);
 }
 
@@ -103,8 +165,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 RCTL(KC_Z), KC_TRNS, RCTL(KC_X), RCTL(KC_C), RCTL(KC_V), RCTL(KC_V), KC_WH_D, RCTL(KC_LEFT), RCTL(KC_UP), RCTL(KC_DOWN), RCTL(KC_RGHT), KC_RSFT,
                 KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, RCTL(KC_MINS), RCTL(KC_EQL), RCS(KC_EQL)),
 	[5] = LAYOUT_planck_mit(
-                KC_NO, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, KC_NO,
-                KC_CAPS, KC_BRID, KC_VOLU, KC_VOLD, KC_BRIU, RGB_MOD, RGB_RMOD, KC_NO, KC_NO, KC_F11, KC_F12, KC_NO,
+                KC_NO, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, ECHO_BACKS,
+                KC_CAPS, KC_BRID, KC_VOLU, KC_VOLD, KC_BRIU, RGB_MOD, RGB_RMOD, KC_NO, KC_NO, KC_F11, KC_F12, ECHO_CHARS,
                 KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, RGB_VAI, KC_RSFT,
                 KC_NO, KC_MUTE, KC_TRNS, KC_NO, KC_NO, KC_MPLY, KC_NO, KC_NO, DF(1), RGB_VAD, DF(0))
 };
