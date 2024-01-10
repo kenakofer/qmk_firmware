@@ -13,6 +13,7 @@ user_stats_t user_stats;
 uint32_t chars_typed = 0;
 uint32_t backspaces_typed = 0;
 uint16_t last_keycode = 0;
+uint16_t typing_timer = 0;
 
 void eeconfig_init_user(void) {  // EEPROM is getting reset!
     user_stats.raw = 0;
@@ -38,6 +39,8 @@ typedef struct {
 } auto_key_t;
 
 auto_key_t auto_keys[NUM_AUTO_KEYS] = {0};
+
+char laydef = 'C'; //variable current default layer; 'C' for Colemak and 'Q' for Qwerty
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
@@ -71,13 +74,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
     }
-    if (record->event.pressed && keycode != last_keycode) {
+    // Only count non-repeated keys pressed while set to Colemak
+    if (record->event.pressed && keycode != last_keycode && laydef == 'C') {
         if (keycode == KC_BSPC) {
-            backspaces_typed++;
-            if (backspaces_typed % 10 == 0) {
-                user_stats.ten_backspaces_typed++;
-                eeconfig_update_user(user_stats.raw);
+            // Not after Enter, and not if 2 seconds have passed since the last typed key
+            if (last_keycode != KC_ENT && timer_elapsed(typing_timer) < 2000) {
+                backspaces_typed++;
+                if (backspaces_typed % 10 == 0) {
+                    user_stats.ten_backspaces_typed++;
+                    eeconfig_update_user(user_stats.raw);
+                }
             }
+        // Ignore modifier keys
         } else if (keycode != KC_LCTL && keycode != KC_LSFT && keycode != KC_LALT && keycode != KC_LGUI
                     && keycode != KC_RCTL && keycode != KC_RSFT && keycode != KC_RALT && keycode != KC_RGUI
                     // Also ignore the layer keys
@@ -90,6 +98,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 user_stats.hundred_chars_typed++;
                 eeconfig_update_user(user_stats.raw);
             }
+            // Start the timer
+            typing_timer = timer_read();
         }
         last_keycode = keycode;
     }
@@ -189,8 +199,6 @@ const key_override_t **key_overrides = (const key_override_t *[]){
     &colemak_ctrl_d_override,
 	NULL // Null terminate the array of overrides!
 };
-
-char laydef = 'C'; //variable current default layer; 'C' for Colemak and 'Q' for Qwerty
 
 void set_hue(uint16_t hue) {
     // Get the current HSV values
