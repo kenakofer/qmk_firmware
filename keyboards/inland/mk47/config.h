@@ -39,3 +39,9 @@
 
 // Kenan added
 #define HOLD_ON_OTHER_KEY_PRESS
+#define MOUSEKEY_DELAY            	10
+#define MOUSEKEY_INTERVAL          	10
+#define MOUSEKEY_MAX_SPEED         	3
+#define MOUSEKEY_TIME_TO_MAX       	20
+#define MOUSEKEY_WHEEL_MAX_SPEED   	3
+#define MOUSEKEY_WHEEL_TIME_TO_MAX 	10
