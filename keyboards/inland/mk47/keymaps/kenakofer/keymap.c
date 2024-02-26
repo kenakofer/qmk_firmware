@@ -1,4 +1,5 @@
 #include QMK_KEYBOARD_H
+// clang-format off
 
 typedef union {
   uint32_t raw;
@@ -19,7 +20,7 @@ void eeconfig_init_user(void) {  // EEPROM is getting reset!
     user_stats.raw = 0;
 }
 
-#define NUM_AUTO_KEYS 5
+#define NUM_AUTO_KEYS 6
 #define AUTO_INTERVAL 40
 enum custom_keycodes {
     AUTO_UP = SAFE_RANGE,
@@ -27,10 +28,14 @@ enum custom_keycodes {
     AUTO_LEFT,
     AUTO_RGHT,
     AUTO_TAB,
+    AUTO_CLICK,
     ECHO_BACKS,
-    ECHO_CHARS
+    ECHO_CHARS,
+    RAISE_6,
+    RAISE_SLASH,
 };
-const uint16_t kc[NUM_AUTO_KEYS] = {KC_UP, KC_DOWN, KC_LEFT, KC_RGHT, KC_TAB};
+const uint16_t kc[NUM_AUTO_KEYS] = {KC_UP, KC_DOWN, KC_LEFT, KC_RGHT, KC_TAB, KC_MS_BTN1};
+const uint16_t auto_intervals[NUM_AUTO_KEYS] = {AUTO_INTERVAL, AUTO_INTERVAL, AUTO_INTERVAL, AUTO_INTERVAL, AUTO_INTERVAL, 100};
 
 
 typedef struct {
@@ -49,6 +54,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case AUTO_LEFT:
         case AUTO_RGHT:
         case AUTO_TAB:
+        case AUTO_CLICK:
             if (record->event.pressed && !auto_keys[keycode - AUTO_UP].is_pressed) {
                 auto_keys[keycode - AUTO_UP].is_pressed = true;
                 auto_keys[keycode - AUTO_UP].timer = timer_read();
@@ -73,6 +79,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 SEND_STRING(buf);
             }
             return false;
+        case MT(MOD_LSFT, RAISE_6): // Fix: https://github.com/qmk/qmk_firmware/blob/master/docs/mod_tap.md#caveats
+            if (record->tap.count && record->event.pressed) {
+                tap_code16(RSFT(KC_6));
+                return false;
+            }
+            break;
+        case MT(MOD_RSFT, RAISE_SLASH): // Fix: https://github.com/qmk/qmk_firmware/blob/master/docs/mod_tap.md#caveats
+            if (record->tap.count && record->event.pressed) {
+                tap_code16(RSFT(KC_SLSH));
+                return false;
+            }
+            break;
     }
     // Only count non-repeated keys pressed while set to Colemak
     if (record->event.pressed && keycode != last_keycode && laydef == 'C') {
@@ -133,7 +151,7 @@ bool rgb_matrix_indicators_user(void) {
 void matrix_scan_user(void) {
 
     for (int i = 0; i < NUM_AUTO_KEYS; i++) {
-        if (auto_keys[i].is_pressed && timer_elapsed(auto_keys[i].timer) > AUTO_INTERVAL) {
+        if (auto_keys[i].is_pressed && timer_elapsed(auto_keys[i].timer) > auto_intervals[i]) {
             auto_keys[i].timer = timer_read();
             tap_code(kc[i]);
         }
@@ -141,33 +159,48 @@ void matrix_scan_user(void) {
 }
 
 void keyboard_post_init_user(void) {
-    user_stats.raw = eeconfig_read_user();
-    chars_typed = user_stats.hundred_chars_typed * 100 + 50;
+    // debug_enable   = true;
+    // debug_matrix   = true;
+    // debug_keyboard = true;
+    // debug_mouse    = true;
+
+    user_stats.raw   = eeconfig_read_user();
+    chars_typed      = user_stats.hundred_chars_typed * 100 + 50;
     backspaces_typed = user_stats.ten_backspaces_typed * 10 + 5;
 
     rgblight_mode_noeeprom(16);
 }
+
+#define COLEMAK_LAYER 0
+#define QWERTY_LAYER 1
+#define LOWER_LAYER 2
+#define RAISE_LAYER 3
+#define GUI_LAYER 4
+#define NAV_LAYER 5
+#define FN_LAYER 6
+
+// clang-format off
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	[0] = LAYOUT_planck_mit(
                 KC_ESC, KC_Q, KC_W, KC_F, KC_P, KC_B, KC_J, KC_L, KC_U, KC_Y, KC_QUOT, KC_BSPC,
                 MT(MOD_RCTL, KC_TAB), KC_A, KC_R, KC_S, KC_T, KC_G, KC_M, KC_N, KC_E, KC_I, KC_O, KC_ENT,
                 KC_Z, KC_LSFT, KC_X, KC_C, KC_D, KC_V, KC_K, KC_H, KC_COMM, KC_DOT, KC_UP, MT(MOD_RSFT, KC_SLSH),
-                KC_LCTL, KC_LALT, MO(6), LM(4, MOD_LGUI), MO(2), KC_SPC, MO(3), MO(5), KC_LEFT, KC_DOWN, KC_RGHT),
+                KC_LCTL, KC_LALT, MO(FN_LAYER), LM(GUI_LAYER, MOD_LGUI), MO(LOWER_LAYER), KC_SPC, MO(RAISE_LAYER), MO(NAV_LAYER), KC_LEFT, KC_DOWN, KC_RGHT),
 	[1] = LAYOUT_planck_mit(
                 KC_ESC, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_BSPC,
                 KC_TAB, KC_A, KC_S, KC_D, KC_F, KC_G, KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_ENT,
                 KC_Z, KC_LSFT, KC_X, KC_C, KC_V, KC_B, KC_N, KC_M, KC_COMM, KC_DOT, KC_UP, MT(MOD_RSFT, KC_SLSH),
-                KC_LCTL, KC_LALT, MO(6), LM(4, MOD_LGUI), MO(2), KC_SPC, MO(3), MO(5), KC_LEFT, KC_DOWN, KC_RGHT),
+                KC_LCTL, KC_LALT, MO(FN_LAYER), LM(GUI_LAYER, MOD_LGUI), MO(LOWER_LAYER), KC_SPC, MO(RAISE_LAYER), MO(NAV_LAYER), KC_LEFT, KC_DOWN, KC_RGHT),
 	[2] = LAYOUT_planck_mit(
                 KC_GRV, RSFT(KC_1), RSFT(KC_2), RSFT(KC_3), RSFT(KC_4), RSFT(KC_5), KC_BSLS, KC_EQL, KC_LBRC, KC_RBRC, KC_QUOT, KC_TRNS,
                 KC_TRNS, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9, KC_0, KC_TRNS,
-                KC_TRNS, KC_6, KC_7, KC_8, KC_9, KC_0, KC_NO, RSFT(KC_MINS), KC_COMM, KC_DOT, RSFT(KC_SCLN), MT(MOD_RSFT, KC_SLSH),
+                KC_TRNS, MT(MOD_LSFT, KC_6), KC_7, KC_8, KC_9, KC_0, KC_NO, RSFT(KC_MINS), KC_COMM, KC_DOT, RSFT(KC_SCLN), MT(MOD_RSFT, KC_SLSH),
                 KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS),
 	[3] = LAYOUT_planck_mit(
                 RSFT(KC_GRV), RSFT(KC_1), RSFT(KC_2), RSFT(KC_3), RSFT(KC_4), RSFT(KC_5), RSFT(KC_BSLS), RSFT(KC_EQL), RSFT(KC_LBRC), RSFT(KC_RBRC), RSFT(KC_QUOT), KC_TRNS,
                 KC_TRNS, RSFT(KC_1), RSFT(KC_2), RSFT(KC_3), RSFT(KC_4), RSFT(KC_5), RSFT(KC_6), RSFT(KC_7), RSFT(KC_8), RSFT(KC_9), RSFT(KC_0), KC_TRNS,
-                KC_TRNS, RSFT(KC_6), RSFT(KC_7), RSFT(KC_8), RSFT(KC_9), RSFT(KC_0), KC_NO, KC_MINS, RSFT(KC_COMM), RSFT(KC_DOT), KC_SCLN, RSFT(KC_SLSH),
+                KC_TRNS, MT(MOD_LSFT, RAISE_6), RSFT(KC_7), RSFT(KC_8), RSFT(KC_9), RSFT(KC_0), KC_NO, KC_MINS, RSFT(KC_COMM), RSFT(KC_DOT), KC_SCLN, MT(MOD_RSFT, RAISE_SLASH),
                 KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS),
 	[4] = LAYOUT_planck_mit(
                 KC_GRV, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_BSPC,
@@ -183,7 +216,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 KC_NO, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, ECHO_BACKS,
                 KC_CAPS, KC_BRID, KC_VOLD, KC_VOLU, KC_BRIU, RGB_MOD, RGB_RMOD, KC_NO, KC_NO, KC_F11, KC_F12, ECHO_CHARS,
                 KC_NO, KC_LSFT, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, RGB_VAI, KC_RSFT,
-                KC_NO, KC_MUTE, KC_TRNS, KC_NO, KC_NO, KC_MPLY, KC_NO, KC_NO, DF(1), RGB_VAD, DF(0))
+                AUTO_CLICK, KC_MUTE, KC_TRNS, KC_NO, KC_NO, KC_MPLY, KC_NO, KC_NO, DF(1), RGB_VAD, DF(0))
 };
 
 #if defined(ENCODER_ENABLE) && defined(ENCODER_MAP_ENABLE)
@@ -196,11 +229,58 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
 const key_override_t colemak_ctrl_v_override = ko_make_with_layers(MOD_MASK_CTRL, KC_D, LCTL(KC_V), 1);
 const key_override_t colemak_ctrl_d_override = ko_make_with_layers(MOD_MASK_CTRL, KC_V, LCTL(KC_D), 1);
 
+// Prevents the shift key from affecting the lower layer
+#define PREVENT_SHIFT_MASK (1 << LOWER_LAYER)
+const key_override_t prevent_shift_1    = ko_make_with_layers(MOD_MASK_SHIFT, KC_1, KC_1, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_2    = ko_make_with_layers(MOD_MASK_SHIFT, KC_2, KC_2, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_3    = ko_make_with_layers(MOD_MASK_SHIFT, KC_3, KC_3, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_4    = ko_make_with_layers(MOD_MASK_SHIFT, KC_4, KC_4, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_5    = ko_make_with_layers(MOD_MASK_SHIFT, KC_5, KC_5, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_6    = ko_make_with_layers(MOD_MASK_SHIFT, KC_6, KC_6, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_7    = ko_make_with_layers(MOD_MASK_SHIFT, KC_7, KC_7, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_8    = ko_make_with_layers(MOD_MASK_SHIFT, KC_8, KC_8, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_9    = ko_make_with_layers(MOD_MASK_SHIFT, KC_9, KC_9, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_0    = ko_make_with_layers(MOD_MASK_SHIFT, KC_0, KC_0, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_comm = ko_make_with_layers(MOD_MASK_SHIFT, KC_COMM, KC_COMM, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_dot  = ko_make_with_layers(MOD_MASK_SHIFT, KC_DOT, KC_DOT, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_bksl = ko_make_with_layers(MOD_MASK_SHIFT, KC_BSLS, KC_BSLS, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_eql  = ko_make_with_layers(MOD_MASK_SHIFT, KC_EQL, KC_EQL, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_lbrc = ko_make_with_layers(MOD_MASK_SHIFT, KC_LBRC, KC_LBRC, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_rbrc = ko_make_with_layers(MOD_MASK_SHIFT, KC_RBRC, KC_RBRC, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_quot = ko_make_with_layers(MOD_MASK_SHIFT, KC_QUOT, KC_QUOT, PREVENT_SHIFT_MASK);
+const key_override_t prevent_shift_sls  = ko_make_with_layers(MOD_MASK_SHIFT, KC_SLSH, KC_SLSH, PREVENT_SHIFT_MASK);
+
+// Prevents the shift key from affecting the upper layer
+#define PREVENT_SHIFT_MASK2 (1 << RAISE_LAYER)
+const key_override_t prevent_shift_mins = ko_make_with_layers(MOD_MASK_SHIFT, KC_MINS, KC_MINS, PREVENT_SHIFT_MASK2);
+const key_override_t prevent_shift_scln = ko_make_with_layers(MOD_MASK_SHIFT, KC_SCLN, KC_SCLN, PREVENT_SHIFT_MASK2);
+
+// clang-format off
 // This globally defines all key overrides to be used
 const key_override_t **key_overrides = (const key_override_t *[]){
     &colemak_ctrl_v_override,
     &colemak_ctrl_d_override,
-	NULL // Null terminate the array of overrides!
+    &prevent_shift_1,
+    &prevent_shift_2,
+    &prevent_shift_3,
+    &prevent_shift_4,
+    &prevent_shift_5,
+    &prevent_shift_6,
+    &prevent_shift_7,
+    &prevent_shift_8,
+    &prevent_shift_9,
+    &prevent_shift_0,
+    &prevent_shift_comm,
+    &prevent_shift_dot,
+    &prevent_shift_bksl,
+    &prevent_shift_eql,
+    &prevent_shift_lbrc,
+    &prevent_shift_rbrc,
+    &prevent_shift_quot,
+    &prevent_shift_sls,
+    &prevent_shift_mins,
+    &prevent_shift_scln,
+    NULL // Null terminate the array of overrides!
 };
 
 void set_hue(uint16_t hue) {
