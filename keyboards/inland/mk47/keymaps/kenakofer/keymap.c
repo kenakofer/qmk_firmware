@@ -1,4 +1,5 @@
 #include QMK_KEYBOARD_H
+#include "process_midi.h"
 // clang-format off
 
 typedef union {
@@ -48,6 +49,21 @@ auto_key_t auto_keys[NUM_AUTO_KEYS] = {0};
 char laydef = 'C'; //variable current default layer; 'C' for Colemak and 'Q' for Qwerty
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (record->event.pressed) {
+        // This code runs when the key is pressed
+        uprintf("Keycode %d pressed\n", keycode);
+    } else {
+        // This code runs when the key is released
+        uprintf("Keycode %d released\n", keycode);
+    }
+    if (keycode >= QK_MIDI_NOTE_C_0 && keycode <= QK_MIDI_NOTE_B_5) {
+        int note = keycode - QK_MIDI_NOTE_C_0 + 12;
+        if (record->event.pressed) {
+            process_midi_basic_noteon(note);
+        } else {
+            process_midi_basic_noteoff(note);
+        }
+    }
     switch (keycode) {
         case AUTO_UP:
         case AUTO_DOWN:
@@ -216,12 +232,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [MIDI_LAYER] = LAYOUT_planck_mit(
         // One octave per row (12 semitones), top row is highest, left to right is C to B
         // 1st octave
-        QK_MIDI_NOTE_C_4, QK_MIDI_NOTE_C_4, QK_MIDI_NOTE_D_4, QK_MIDI_NOTE_D_SHARP_4, QK_MIDI_NOTE_E_4, QK_MIDI_NOTE_F_4, QK_MIDI_NOTE_F_SHARP_4, QK_MIDI_NOTE_G_4, QK_MIDI_NOTE_G_SHARP_4, QK_MIDI_NOTE_A_4, QK_MIDI_NOTE_A_SHARP_4, QK_MIDI_NOTE_B_4,
+        QK_MIDI_NOTE_C_5, QK_MIDI_NOTE_C_SHARP_5, QK_MIDI_NOTE_D_5, QK_MIDI_NOTE_D_SHARP_5, QK_MIDI_NOTE_E_5, QK_MIDI_NOTE_F_5, QK_MIDI_NOTE_F_SHARP_5, QK_MIDI_NOTE_G_5, QK_MIDI_NOTE_G_SHARP_5, QK_MIDI_NOTE_A_5, QK_MIDI_NOTE_A_SHARP_5, QK_MIDI_NOTE_B_5,
         // 2nd octave
-        QK_MIDI_NOTE_C_3, QK_MIDI_NOTE_C_SHARP_3, QK_MIDI_NOTE_D_3, QK_MIDI_NOTE_D_SHARP_3, QK_MIDI_NOTE_E_3, QK_MIDI_NOTE_F_3, QK_MIDI_NOTE_F_SHARP_3, QK_MIDI_NOTE_G_3, QK_MIDI_NOTE_G_SHARP_3, QK_MIDI_NOTE_A_3, QK_MIDI_NOTE_A_SHARP_3, QK_MIDI_NOTE_B_3,
+        QK_MIDI_NOTE_C_4, QK_MIDI_NOTE_C_SHARP_4, QK_MIDI_NOTE_D_4, QK_MIDI_NOTE_D_SHARP_4, QK_MIDI_NOTE_E_4, QK_MIDI_NOTE_F_4, QK_MIDI_NOTE_F_SHARP_4, QK_MIDI_NOTE_G_4, QK_MIDI_NOTE_G_SHARP_4, QK_MIDI_NOTE_A_4, QK_MIDI_NOTE_A_SHARP_4, QK_MIDI_NOTE_B_4,
         // 3rd octave
-        QK_MIDI_NOTE_C_2, QK_MIDI_NOTE_C_SHARP_2, QK_MIDI_NOTE_D_2, QK_MIDI_NOTE_D_SHARP_2, QK_MIDI_NOTE_E_2, QK_MIDI_NOTE_F_2, QK_MIDI_NOTE_F_SHARP_2, QK_MIDI_NOTE_G_2, QK_MIDI_NOTE_G_SHARP_2, QK_MIDI_NOTE_A_2, QK_MIDI_NOTE_A_SHARP_2, QK_MIDI_NOTE_B_2,
-        QK_MIDI_OFF, QK_MIDI_ON, MO(FN_LAYER), KC_NO, QK_MIDI_PITCH_BEND_DOWN, KC_NO, QK_MIDI_PITCH_BEND_UP, KC_NO, KC_NO, KC_NO, KC_NO),
+        QK_MIDI_NOTE_C_3, QK_MIDI_NOTE_C_SHARP_3, QK_MIDI_NOTE_D_3, QK_MIDI_NOTE_D_SHARP_3, QK_MIDI_NOTE_E_3, QK_MIDI_NOTE_F_3, QK_MIDI_NOTE_F_SHARP_3, QK_MIDI_NOTE_G_3, QK_MIDI_NOTE_G_SHARP_3, QK_MIDI_NOTE_A_3, QK_MIDI_NOTE_A_SHARP_3, QK_MIDI_NOTE_B_3,
+        QK_MIDI_OFF, QK_MIDI_ON, MO(FN_LAYER), KC_NO, QK_MIDI_PITCH_BEND_DOWN, KC_NO, QK_MIDI_NOTE_G_2, QK_MIDI_NOTE_G_SHARP_2, QK_MIDI_NOTE_A_2, QK_MIDI_NOTE_A_SHARP_2, QK_MIDI_NOTE_B_2),
 
 	[FN_LAYER] = LAYOUT_planck_mit(
                 KC_NO, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, ECHO_BACKS,
