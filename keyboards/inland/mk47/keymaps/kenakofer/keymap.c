@@ -177,7 +177,8 @@ void keyboard_post_init_user(void) {
 #define LOWER_LAYER 3
 #define RAISE_LAYER 4
 #define NAV_LAYER 5
-#define FN_LAYER 6
+#define MIDI_LAYER 6
+#define FN_LAYER 7
 
 // clang-format off
 
@@ -212,11 +213,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 AUTO_TAB, AUTO_LEFT, AUTO_DOWN, AUTO_UP, AUTO_RGHT, KC_PGDN, KC_NO, KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, KC_TRNS,
                 RCTL(KC_Z), KC_LSFT, RCTL(KC_X), RCTL(KC_C), RCTL(KC_V), KC_HOME, KC_END, RCTL(KC_LEFT), RCTL(KC_DOWN), RCTL(KC_UP), RCTL(KC_RGHT), KC_RSFT,
                 KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, RCTL(KC_MINS), RCTL(KC_EQL), RCS(KC_EQL)),
+    [MIDI_LAYER] = LAYOUT_planck_mit(
+        // One octave per row (12 semitones), top row is highest, left to right is C to B
+        // 1st octave
+        QK_MIDI_NOTE_C_4, QK_MIDI_NOTE_C_4, QK_MIDI_NOTE_D_4, QK_MIDI_NOTE_D_SHARP_4, QK_MIDI_NOTE_E_4, QK_MIDI_NOTE_F_4, QK_MIDI_NOTE_F_SHARP_4, QK_MIDI_NOTE_G_4, QK_MIDI_NOTE_G_SHARP_4, QK_MIDI_NOTE_A_4, QK_MIDI_NOTE_A_SHARP_4, QK_MIDI_NOTE_B_4,
+        // 2nd octave
+        QK_MIDI_NOTE_C_3, QK_MIDI_NOTE_C_SHARP_3, QK_MIDI_NOTE_D_3, QK_MIDI_NOTE_D_SHARP_3, QK_MIDI_NOTE_E_3, QK_MIDI_NOTE_F_3, QK_MIDI_NOTE_F_SHARP_3, QK_MIDI_NOTE_G_3, QK_MIDI_NOTE_G_SHARP_3, QK_MIDI_NOTE_A_3, QK_MIDI_NOTE_A_SHARP_3, QK_MIDI_NOTE_B_3,
+        // 3rd octave
+        QK_MIDI_NOTE_C_2, QK_MIDI_NOTE_C_SHARP_2, QK_MIDI_NOTE_D_2, QK_MIDI_NOTE_D_SHARP_2, QK_MIDI_NOTE_E_2, QK_MIDI_NOTE_F_2, QK_MIDI_NOTE_F_SHARP_2, QK_MIDI_NOTE_G_2, QK_MIDI_NOTE_G_SHARP_2, QK_MIDI_NOTE_A_2, QK_MIDI_NOTE_A_SHARP_2, QK_MIDI_NOTE_B_2,
+        QK_MIDI_OFF, QK_MIDI_ON, MO(FN_LAYER), KC_NO, QK_MIDI_PITCH_BEND_DOWN, KC_NO, QK_MIDI_PITCH_BEND_UP, KC_NO, KC_NO, KC_NO, KC_NO),
+
 	[FN_LAYER] = LAYOUT_planck_mit(
                 KC_NO, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, ECHO_BACKS,
                 KC_CAPS, KC_BRID, KC_VOLD, KC_VOLU, KC_BRIU, RGB_MOD, RGB_RMOD, KC_NO, KC_NO, KC_F11, KC_F12, ECHO_CHARS,
                 KC_F1, KC_LSFT, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, RGB_VAI, KC_RSFT,
-                AUTO_CLICK, KC_MUTE, KC_TRNS, KC_NO, KC_NO, KC_MPLY, KC_NO, KC_NO, DF(1), RGB_VAD, DF(0))
+                AUTO_CLICK, KC_MUTE, KC_TRNS, KC_NO, KC_NO, KC_MPLY, KC_NO, DF(MIDI_LAYER), DF(QWERTY_LAYER), RGB_VAD, DF(COLEMAK_LAYER))
 };
 
 #if defined(ENCODER_ENABLE) && defined(ENCODER_MAP_ENABLE)
@@ -294,9 +305,13 @@ void set_hue(uint16_t hue) {
 //call default layer state
 layer_state_t default_layer_state_set_user(layer_state_t state) {
     switch(biton32(state)){
-        case 0:
+        case COLEMAK_LAYER:
         laydef = 'C';
         set_hue(0xEE);
+        break;
+        case MIDI_LAYER:
+        laydef = 'M';
+        set_hue(0x88);
         break;
         default:
         laydef = 'Q';
@@ -324,8 +339,11 @@ layer_state_t layer_state_set_user(layer_state_t state) {
         set_hue (0x44);
         break;
     default: //  for any other layers, or the default layer
-        if(laydef == 'Q'){ //check if current default layer is _NUM
+        if(laydef == 'Q'){
             set_hue (0x20);
+        }
+        else if(laydef == 'M'){
+            set_hue(0x88);
         } else {
             set_hue(0xEE);
         }
