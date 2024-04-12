@@ -215,7 +215,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	[FN_LAYER] = LAYOUT_planck_mit(
                 KC_NO, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, ECHO_BACKS,
                 KC_CAPS, KC_BRID, KC_VOLD, KC_VOLU, KC_BRIU, RGB_MOD, RGB_RMOD, KC_NO, KC_NO, KC_F11, KC_F12, ECHO_CHARS,
-                KC_NO, KC_LSFT, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, RGB_VAI, KC_RSFT,
+                KC_F1, KC_LSFT, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, RGB_VAI, KC_RSFT,
                 AUTO_CLICK, KC_MUTE, KC_TRNS, KC_NO, KC_NO, KC_MPLY, KC_NO, KC_NO, DF(1), RGB_VAD, DF(0))
 };
 
