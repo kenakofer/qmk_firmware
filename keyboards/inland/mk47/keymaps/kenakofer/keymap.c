@@ -56,7 +56,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // This code runs when the key is released
         uprintf("Keycode %d released\n", keycode);
     }
-    if (keycode >= QK_MIDI_NOTE_C_0 && keycode <= QK_MIDI_NOTE_B_5) {
+    if (keycode >= QK_MIDI_NOTE_C_0 && keycode <= QK_MIDI_NOTE_B_5 + 6) {
         int note = keycode - QK_MIDI_NOTE_C_0 + 12;
         if (record->event.pressed) {
             process_midi_basic_noteon(note);
@@ -193,8 +193,9 @@ void keyboard_post_init_user(void) {
 #define LOWER_LAYER 3
 #define RAISE_LAYER 4
 #define NAV_LAYER 5
-#define MIDI_LAYER 6
-#define FN_LAYER 7
+#define MIDI_LAYER_CHROMATIC 6
+#define MIDI_LAYER_C 7
+#define FN_LAYER 8
 
 // clang-format off
 
@@ -222,14 +223,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	[RAISE_LAYER] = LAYOUT_planck_mit(
                 RSFT(KC_GRV), RSFT(KC_1), RSFT(KC_2), RSFT(KC_3), RSFT(KC_4), RSFT(KC_5), RSFT(KC_BSLS), RSFT(KC_EQL), RSFT(KC_LBRC), RSFT(KC_RBRC), RSFT(KC_QUOT), KC_TRNS,
                 KC_TRNS, RSFT(KC_1), RSFT(KC_2), RSFT(KC_3), RSFT(KC_4), RSFT(KC_5), RSFT(KC_6), RSFT(KC_7), RSFT(KC_8), RSFT(KC_9), RSFT(KC_0), KC_TRNS,
-                KC_TRNS, MOD_LSFT, KC_TRNS, RCTL(KC_V), KC_TRNS, KC_TRNS, KC_MINS, RSFT(KC_COMM), RSFT(KC_DOT), KC_SCLN, MT(MOD_RSFT, RAISE_SLASH),
+                KC_TRNS, MOD_LSFT, KC_TRNS, KC_TRNS, RCTL(KC_V), KC_TRNS, KC_TRNS, KC_MINS, RSFT(KC_COMM), RSFT(KC_DOT), KC_SCLN, MT(MOD_RSFT, RAISE_SLASH),
                 KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS),
 	[NAV_LAYER] = LAYOUT_planck_mit(
                 KC_TRNS, KC_WH_L, KC_WH_D, KC_WH_U, KC_WH_R, KC_PGUP, KC_NO, RCS(KC_TAB), RALT(KC_LEFT), RALT(KC_RGHT), RCTL(KC_TAB), KC_DEL,
                 AUTO_TAB, AUTO_LEFT, AUTO_DOWN, AUTO_UP, AUTO_RGHT, KC_PGDN, KC_NO, KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, KC_TRNS,
                 RCTL(KC_Z), KC_LSFT, RCTL(KC_X), RCTL(KC_C), RCTL(KC_V), KC_HOME, KC_END, RCTL(KC_LEFT), RCTL(KC_DOWN), RCTL(KC_UP), RCTL(KC_RGHT), KC_RSFT,
                 KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, RCTL(KC_MINS), RCTL(KC_EQL), RCS(KC_EQL)),
-    [MIDI_LAYER] = LAYOUT_planck_mit(
+    [MIDI_LAYER_CHROMATIC] = LAYOUT_planck_mit(
         // One octave per row (12 semitones), top row is highest, left to right is C to B
         // 1st octave
         QK_MIDI_NOTE_C_5, QK_MIDI_NOTE_C_SHARP_5, QK_MIDI_NOTE_D_5, QK_MIDI_NOTE_D_SHARP_5, QK_MIDI_NOTE_E_5, QK_MIDI_NOTE_F_5, QK_MIDI_NOTE_F_SHARP_5, QK_MIDI_NOTE_G_5, QK_MIDI_NOTE_G_SHARP_5, QK_MIDI_NOTE_A_5, QK_MIDI_NOTE_A_SHARP_5, QK_MIDI_NOTE_B_5,
@@ -238,7 +239,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         // 3rd octave
         QK_MIDI_NOTE_C_3, QK_MIDI_NOTE_C_SHARP_3, QK_MIDI_NOTE_D_3, QK_MIDI_NOTE_D_SHARP_3, QK_MIDI_NOTE_E_3, QK_MIDI_NOTE_F_3, QK_MIDI_NOTE_F_SHARP_3, QK_MIDI_NOTE_G_3, QK_MIDI_NOTE_G_SHARP_3, QK_MIDI_NOTE_A_3, QK_MIDI_NOTE_A_SHARP_3, QK_MIDI_NOTE_B_3,
         QK_MIDI_OFF, QK_MIDI_ON, MO(FN_LAYER), KC_NO, QK_MIDI_PITCH_BEND_DOWN, KC_NO, QK_MIDI_NOTE_G_2, QK_MIDI_NOTE_G_SHARP_2, QK_MIDI_NOTE_A_2, QK_MIDI_NOTE_A_SHARP_2, QK_MIDI_NOTE_B_2),
-
+    [MIDI_LAYER_C] = LAYOUT_planck_mit(
+        // One octave per row (12 semitones), top row is highest, left to right is B, C, D, etc.
+        // 1st octave
+        QK_MIDI_NOTE_B_4, QK_MIDI_NOTE_C_5, QK_MIDI_NOTE_D_5, QK_MIDI_NOTE_E_5, QK_MIDI_NOTE_F_5, QK_MIDI_NOTE_G_5, QK_MIDI_NOTE_A_5, QK_MIDI_NOTE_B_5, QK_MIDI_NOTE_B_5 + 1, QK_MIDI_NOTE_B_5 + 3, QK_MIDI_NOTE_B_5 + 5, QK_MIDI_NOTE_B_5 + 6,
+        // 2nd octave
+        QK_MIDI_NOTE_B_3, QK_MIDI_NOTE_C_4, QK_MIDI_NOTE_D_4, QK_MIDI_NOTE_E_4, QK_MIDI_NOTE_F_4, QK_MIDI_NOTE_G_4, QK_MIDI_NOTE_A_4, QK_MIDI_NOTE_B_4, QK_MIDI_NOTE_C_5, QK_MIDI_NOTE_D_5, QK_MIDI_NOTE_E_5, QK_MIDI_NOTE_F_5,
+        // 3rd octave
+        QK_MIDI_NOTE_B_2, QK_MIDI_NOTE_C_3, QK_MIDI_NOTE_D_3, QK_MIDI_NOTE_E_3, QK_MIDI_NOTE_F_3, QK_MIDI_NOTE_G_3, QK_MIDI_NOTE_A_3, QK_MIDI_NOTE_B_3, QK_MIDI_NOTE_C_4, QK_MIDI_NOTE_D_4, QK_MIDI_NOTE_E_4, QK_MIDI_NOTE_F_4,
+        QK_MIDI_OFF, QK_MIDI_ON, MO(FN_LAYER), KC_NO, KC_NO, QK_MIDI_NOTE_C_2, QK_MIDI_NOTE_D_2, QK_MIDI_NOTE_E_2, QK_MIDI_NOTE_F_2, QK_MIDI_NOTE_G_2, QK_MIDI_NOTE_A_2),
 	[FN_LAYER] = LAYOUT_planck_mit(
                 KC_NO, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, ECHO_BACKS,
                 KC_CAPS, KC_BRID, KC_VOLD, KC_VOLU, KC_BRIU, RGB_MOD, RGB_RMOD, KC_NO, KC_NO, KC_F11, KC_F12, ECHO_CHARS,
@@ -325,7 +334,7 @@ layer_state_t default_layer_state_set_user(layer_state_t state) {
         laydef = 'C';
         set_hue(0xEE);
         break;
-        case MIDI_LAYER:
+        case MIDI_LAYER_CHROMATIC:
         laydef = 'M';
         set_hue(0x88);
         break;
