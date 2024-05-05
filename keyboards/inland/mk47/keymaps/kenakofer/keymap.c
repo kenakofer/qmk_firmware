@@ -2,6 +2,19 @@
 #include "process_midi.h"
 // clang-format off
 
+#define COLEMAK_LAYER 0
+#define QWERTY_LAYER 1
+#define GUI_LAYER 2
+#define LOWER_LAYER 3
+#define RAISE_LAYER 4
+#define NAV_LAYER 5
+#define MIDI_LAYER_CHROMATIC 6
+#define MIDI_LAYER_C 7
+#define FN_LAYER 8
+
+#define RAISE_OR_COPY LT(RAISE_LAYER, KC_C)
+#define LOWER_OR_PASTE LT(LOWER_LAYER, KC_V)
+
 typedef union {
   uint32_t raw;
   struct {
@@ -107,6 +120,22 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 return false;
             }
             break;
+        case RAISE_OR_COPY:
+            if (record->tap.count && record->event.pressed) {
+                register_code(KC_RCTL);
+                tap_code(KC_C);
+                unregister_code(KC_RCTL);
+                return false;
+            }
+            break;
+        case LOWER_OR_PASTE:
+            if (record->tap.count && record->event.pressed) {
+                register_code(KC_RCTL);
+                tap_code(KC_V);
+                unregister_code(KC_RCTL);
+                return false;
+            }
+            break;
     }
     // Only count non-repeated keys pressed while set to Colemak
     if (record->event.pressed && keycode != last_keycode && laydef == 'C') {
@@ -187,15 +216,7 @@ void keyboard_post_init_user(void) {
     rgblight_mode_noeeprom(16);
 }
 
-#define COLEMAK_LAYER 0
-#define QWERTY_LAYER 1
-#define GUI_LAYER 2
-#define LOWER_LAYER 3
-#define RAISE_LAYER 4
-#define NAV_LAYER 5
-#define MIDI_LAYER_CHROMATIC 6
-#define MIDI_LAYER_C 7
-#define FN_LAYER 8
+
 
 // clang-format off
 
@@ -204,7 +225,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 KC_ESC, KC_Q, KC_W, KC_F, KC_P, KC_B, KC_J, KC_L, KC_U, KC_Y, KC_QUOT, KC_BSPC,
                 MT(MOD_RCTL, KC_TAB), KC_A, KC_R, KC_S, KC_T, KC_G, KC_M, KC_N, KC_E, KC_I, KC_O, KC_ENT,
                 KC_Z, KC_LSFT, KC_X, KC_C, KC_D, KC_V, KC_K, KC_H, KC_COMM, KC_DOT, KC_UP, MT(MOD_RSFT, KC_SLSH),
-                KC_LCTL, KC_LALT, MO(FN_LAYER), LM(GUI_LAYER, MOD_LGUI), MO(LOWER_LAYER), KC_SPC, MO(RAISE_LAYER), MO(NAV_LAYER), KC_LEFT, KC_DOWN, KC_RGHT),
+                KC_LCTL, KC_LALT, MO(FN_LAYER), LM(GUI_LAYER, MOD_LGUI), LOWER_OR_PASTE, KC_SPC, RAISE_OR_COPY, MO(NAV_LAYER), KC_LEFT, KC_DOWN, KC_RGHT),
 	[QWERTY_LAYER] = LAYOUT_planck_mit(
                 KC_ESC, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_BSPC,
                 KC_TAB, KC_A, KC_S, KC_D, KC_F, KC_G, KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_ENT,
@@ -253,6 +274,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 KC_CAPS, KC_BRID, KC_VOLD, KC_VOLU, KC_BRIU, RGB_MOD, RGB_RMOD, KC_NO, KC_NO, KC_F11, KC_F12, ECHO_CHARS,
                 KC_F6, KC_LSFT, KC_F7, KC_F8, KC_F9, KC_F10, KC_F11, KC_F12, KC_F13, KC_F14, RGB_VAI, KC_RSFT,
                 AUTO_CLICK, KC_MUTE, KC_TRNS, KC_NO, KC_NO, KC_MPLY, DF(MIDI_LAYER_C), DF(MIDI_LAYER_CHROMATIC), DF(QWERTY_LAYER), RGB_VAD, DF(COLEMAK_LAYER))
+
 };
 
 #if defined(ENCODER_ENABLE) && defined(ENCODER_MAP_ENABLE)
