@@ -299,9 +299,33 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
 };
 #endif // defined(ENCODER_ENABLE) &&
 
-
-const key_override_t colemak_ctrl_v_override = ko_make_with_layers(MOD_MASK_CTRL, KC_D, LCTL(KC_V), 1);
-const key_override_t colemak_ctrl_d_override = ko_make_with_layers(MOD_MASK_CTRL, KC_V, LCTL(KC_D), 1);
+// Override all the colemak letters when pressing ctrl
+const key_override_t colemak_ctrl_a_override = ko_make_with_layers(MOD_MASK_CTRL, KC_A, LCTL(KC_A), 1);
+const key_override_t colemak_ctrl_b_override = ko_make_with_layers(MOD_MASK_CTRL, KC_B, LCTL(KC_T), 1);
+const key_override_t colemak_ctrl_c_override = ko_make_with_layers(MOD_MASK_CTRL, KC_C, LCTL(KC_C), 1);
+const key_override_t colemak_ctrl_d_override = ko_make_with_layers(MOD_MASK_CTRL, KC_D, LCTL(KC_V), 1);
+const key_override_t colemak_ctrl_e_override = ko_make_with_layers(MOD_MASK_CTRL, KC_E, LCTL(KC_K), 1);
+const key_override_t colemak_ctrl_f_override = ko_make_with_layers(MOD_MASK_CTRL, KC_F, LCTL(KC_E), 1);
+const key_override_t colemak_ctrl_g_override = ko_make_with_layers(MOD_MASK_CTRL, KC_G, LCTL(KC_G), 1);
+const key_override_t colemak_ctrl_h_override = ko_make_with_layers(MOD_MASK_CTRL, KC_H, LCTL(KC_M), 1);
+const key_override_t colemak_ctrl_i_override = ko_make_with_layers(MOD_MASK_CTRL, KC_I, LCTL(KC_L), 1);
+const key_override_t colemak_ctrl_j_override = ko_make_with_layers(MOD_MASK_CTRL, KC_J, LCTL(KC_Y), 1);
+const key_override_t colemak_ctrl_k_override = ko_make_with_layers(MOD_MASK_CTRL, KC_K, LCTL(KC_N), 1);
+const key_override_t colemak_ctrl_l_override = ko_make_with_layers(MOD_MASK_CTRL, KC_L, LCTL(KC_U), 1);
+const key_override_t colemak_ctrl_m_override = ko_make_with_layers(MOD_MASK_CTRL, KC_M, LCTL(KC_H), 1);
+const key_override_t colemak_ctrl_n_override = ko_make_with_layers(MOD_MASK_CTRL, KC_N, LCTL(KC_J), 1);
+const key_override_t colemak_ctrl_o_override = ko_make_with_layers(MOD_MASK_CTRL, KC_O, LCTL(KC_SEMICOLON), 1);
+const key_override_t colemak_ctrl_p_override = ko_make_with_layers(MOD_MASK_CTRL, KC_P, LCTL(KC_R), 1);
+const key_override_t colemak_ctrl_q_override = ko_make_with_layers(MOD_MASK_CTRL, KC_Q, LCTL(KC_Q), 1);
+const key_override_t colemak_ctrl_r_override = ko_make_with_layers(MOD_MASK_CTRL, KC_R, LCTL(KC_S), 1);
+const key_override_t colemak_ctrl_s_override = ko_make_with_layers(MOD_MASK_CTRL, KC_S, LCTL(KC_D), 1);
+const key_override_t colemak_ctrl_t_override = ko_make_with_layers(MOD_MASK_CTRL, KC_T, LCTL(KC_F), 1);
+const key_override_t colemak_ctrl_u_override = ko_make_with_layers(MOD_MASK_CTRL, KC_U, LCTL(KC_I), 1);
+const key_override_t colemak_ctrl_v_override = ko_make_with_layers(MOD_MASK_CTRL, KC_V, LCTL(KC_B), 1);
+const key_override_t colemak_ctrl_w_override = ko_make_with_layers(MOD_MASK_CTRL, KC_W, LCTL(KC_W), 1);
+const key_override_t colemak_ctrl_x_override = ko_make_with_layers(MOD_MASK_CTRL, KC_X, LCTL(KC_X), 1);
+const key_override_t colemak_ctrl_y_override = ko_make_with_layers(MOD_MASK_CTRL, KC_Y, LCTL(KC_O), 1);
+const key_override_t colemak_ctrl_z_override = ko_make_with_layers(MOD_MASK_CTRL, KC_Z, LCTL(KC_Z), 1);
 
 // Prevents the shift key from affecting the lower layer
 #define PREVENT_SHIFT_MASK (1 << LOWER_LAYER)
@@ -332,8 +356,33 @@ const key_override_t prevent_shift_scln = ko_make_with_layers(MOD_MASK_SHIFT, KC
 // clang-format off
 // This globally defines all key overrides to be used
 const key_override_t **key_overrides = (const key_override_t *[]){
-    &colemak_ctrl_v_override,
+    &colemak_ctrl_a_override,
+    &colemak_ctrl_b_override,
+    &colemak_ctrl_c_override,
     &colemak_ctrl_d_override,
+    &colemak_ctrl_e_override,
+    &colemak_ctrl_f_override,
+    &colemak_ctrl_g_override,
+    &colemak_ctrl_h_override,
+    &colemak_ctrl_i_override,
+    &colemak_ctrl_j_override,
+    &colemak_ctrl_k_override,
+    &colemak_ctrl_l_override,
+    &colemak_ctrl_m_override,
+    &colemak_ctrl_n_override,
+    &colemak_ctrl_o_override,
+    &colemak_ctrl_p_override,
+    &colemak_ctrl_q_override,
+    &colemak_ctrl_r_override,
+    &colemak_ctrl_s_override,
+    &colemak_ctrl_t_override,
+    &colemak_ctrl_u_override,
+    &colemak_ctrl_v_override,
+    &colemak_ctrl_w_override,
+    &colemak_ctrl_x_override,
+    &colemak_ctrl_y_override,
+    &colemak_ctrl_z_override,
+
     &prevent_shift_1,
     &prevent_shift_2,
     &prevent_shift_3,
