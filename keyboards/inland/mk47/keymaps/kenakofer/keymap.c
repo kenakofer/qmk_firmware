@@ -15,6 +15,7 @@
 #define RAISE_OR_COPY LT(RAISE_LAYER, KC_C)
 #define LOWER_OR_PASTE LT(LOWER_LAYER, KC_V)
 #define LOWER_OR_ONE LT(LOWER_LAYER, KC_2) // The KC_ used doesn't actually matter, but with this we'll know if the custom processing fails and it prints 2 instead of 1
+#define LOWER_OR_A LT(LOWER_LAYER, KC_3) // The KC_ used doesn't actually matter, but with this we'll know if the custom processing fails and it prints 3 instead of a
 
 typedef union {
   uint32_t raw;
@@ -147,6 +148,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 return false;
             }
             break;
+        case LOWER_OR_A:
+            if (record->tap.count && record->event.pressed) {
+                register_code(KC_A); // We'll unregister after a delay so games have a chance to see it. (Terraria at least)
+                tap_timer = timer_read();
+                tap_down = true;
+                return false;
+            }
+            break;
     }
     // Only count non-repeated keys pressed while set to Colemak
     if (record->event.pressed && keycode != last_keycode && laydef == 'C') {
@@ -215,6 +224,7 @@ void matrix_scan_user(void) {
 
     if (tap_down && timer_elapsed(tap_timer) > 400) {
         unregister_code(KC_1);
+        unregister_code(KC_A);
         tap_down = false;
     }
 }
@@ -241,7 +251,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 KC_ESC, KC_Q, KC_W, KC_F, KC_P, KC_B, KC_J, KC_L, KC_U, KC_Y, KC_QUOT, KC_BSPC,
                 MT(MOD_RCTL, KC_TAB), KC_A, KC_R, KC_S, KC_T, KC_G, KC_M, KC_N, KC_E, KC_I, KC_O, KC_ENT,
                 KC_Z, KC_LSFT, KC_X, KC_C, KC_D, KC_V, KC_K, KC_H, KC_COMM, KC_DOT, KC_UP, MT(MOD_RSFT, KC_SLSH),
-                KC_LCTL, KC_LALT, MO(FN_LAYER), LM(GUI_LAYER, MOD_LGUI), LOWER_OR_ONE, KC_SPC, RAISE_OR_COPY, MO(NAV_LAYER), KC_LEFT, KC_DOWN, KC_RGHT),
+                KC_LCTL, KC_LALT, MO(FN_LAYER), LM(GUI_LAYER, MOD_LGUI), LOWER_OR_A, KC_SPC, RAISE_OR_COPY, MO(NAV_LAYER), KC_LEFT, KC_DOWN, KC_RGHT),
 	[QWERTY_LAYER] = LAYOUT_planck_mit(
                 KC_ESC, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_BSPC,
                 KC_TAB, KC_A, KC_S, KC_D, KC_F, KC_G, KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_ENT,
@@ -260,7 +270,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	[RAISE_LAYER] = LAYOUT_planck_mit(
                 RSFT(KC_GRV), RSFT(KC_1), RSFT(KC_2), RSFT(KC_3), RSFT(KC_4), RSFT(KC_5), RSFT(KC_BSLS), RSFT(KC_EQL), RSFT(KC_LBRC), RSFT(KC_RBRC), RSFT(KC_QUOT), KC_TRNS,
                 KC_TRNS, RSFT(KC_1), RSFT(KC_2), RSFT(KC_3), RSFT(KC_4), RSFT(KC_5), RSFT(KC_6), RSFT(KC_7), RSFT(KC_8), RSFT(KC_9), RSFT(KC_0), KC_TRNS,
-                KC_TRNS, MOD_LSFT, KC_TRNS, KC_TRNS, RCTL(KC_V), KC_TRNS, KC_TRNS, KC_MINS, RSFT(KC_COMM), RSFT(KC_DOT), KC_SCLN, MT(MOD_RSFT, RAISE_SLASH),
+                KC_TRNS, KC_LSFT, KC_TRNS, KC_TRNS, RCTL(KC_V), KC_TRNS, KC_TRNS, KC_MINS, RSFT(KC_COMM), RSFT(KC_DOT), KC_SCLN, MT(MOD_RSFT, RAISE_SLASH),
                 KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS),
 	[NAV_LAYER] = LAYOUT_planck_mit(
                 KC_MS_BTN1, KC_WH_L, KC_WH_U, KC_WH_D, KC_WH_R, AUTO_UP, KC_NO, RCS(KC_TAB), RALT(KC_LEFT), RALT(KC_RGHT), RCTL(KC_TAB), KC_DEL,
