@@ -336,6 +336,7 @@ const key_override_t colemak_ctrl_w_override = ko_make_with_layers(MOD_MASK_CTRL
 const key_override_t colemak_ctrl_x_override = ko_make_with_layers(MOD_MASK_CTRL, KC_X, LCTL(KC_X), 1);
 const key_override_t colemak_ctrl_y_override = ko_make_with_layers(MOD_MASK_CTRL, KC_Y, LCTL(KC_O), 1);
 const key_override_t colemak_ctrl_z_override = ko_make_with_layers(MOD_MASK_CTRL, KC_Z, LCTL(KC_Z), 1);
+const key_override_t colemak_ctrl_quote_override = ko_make_with_layers(MOD_MASK_CTRL, KC_QUOT, LCTL(KC_P), 1);
 
 // Prevents the shift key from affecting the lower layer
 #define PREVENT_SHIFT_MASK (1 << LOWER_LAYER)
@@ -392,6 +393,7 @@ const key_override_t **key_overrides = (const key_override_t *[]){
     &colemak_ctrl_x_override,
     &colemak_ctrl_y_override,
     &colemak_ctrl_z_override,
+    &colemak_ctrl_quote_override,
 
     &prevent_shift_1,
     &prevent_shift_2,
