@@ -52,6 +52,7 @@ enum custom_keycodes {
     ECHO_CHARS,
     RAISE_6,
     RAISE_SLASH,
+    REAL_ALT,
 };
 const uint16_t kc[NUM_AUTO_KEYS] = {KC_UP, KC_DOWN, KC_LEFT, KC_RGHT, KC_TAB, KC_MS_BTN1};
 const uint16_t auto_intervals[NUM_AUTO_KEYS] = {AUTO_INTERVAL, AUTO_INTERVAL, AUTO_INTERVAL, AUTO_INTERVAL, AUTO_INTERVAL, 100};
@@ -65,6 +66,7 @@ typedef struct {
 auto_key_t auto_keys[NUM_AUTO_KEYS] = {0};
 
 char laydef = 'C'; //variable current default layer; 'C' for Colemak and 'Q' for Qwerty
+bool real_alt_down = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (record->event.pressed) {
@@ -82,7 +84,26 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             process_midi_basic_noteoff(note);
         }
     }
+    if (!real_alt_down) {
+        unregister_code(KC_LALT);
+    }
     switch (keycode) {
+        case REAL_ALT:
+            if (record->event.pressed) {
+                register_code(KC_LALT);
+                real_alt_down = true;
+            } else {
+                unregister_code(KC_LALT);
+                real_alt_down = false;
+            }
+            return false;
+        case LALT(KC_TAB): // This allows ALT to stay "pressed" for better MS window switching. See REAL_ALT for the corrective to preserve the actual alt key behavior.
+            if (!record->event.pressed) { // On release
+                register_code(KC_LALT); // Gets unregistered by the next process record
+                unregister_code(KC_TAB);
+                return false;
+            }
+            break;
         case AUTO_UP:
         case AUTO_DOWN:
         case AUTO_LEFT:
@@ -252,12 +273,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 KC_ESC, KC_Q, KC_W, KC_F, KC_P, KC_B, KC_J, KC_L, KC_U, KC_Y, KC_QUOT, KC_BSPC,
                 MT(MOD_RCTL, KC_TAB), KC_A, KC_R, KC_S, KC_T, KC_G, KC_M, KC_N, KC_E, KC_I, KC_O, KC_ENT,
                 KC_Z, KC_LSFT, KC_X, KC_C, KC_D, KC_V, KC_K, KC_H, KC_COMM, KC_DOT, KC_UP, MT(MOD_RSFT, KC_SLSH),
-                KC_LCTL, KC_LALT, MO(FN_LAYER), LM(GUI_LAYER, MOD_LGUI), LOWER_OR_A, KC_SPC, RAISE_OR_COPY, MO(NAV_LAYER), KC_LEFT, KC_DOWN, KC_RGHT),
+                KC_LCTL, REAL_ALT, MO(FN_LAYER), LM(GUI_LAYER, MOD_LGUI), LOWER_OR_A, KC_SPC, RAISE_OR_COPY, MO(NAV_LAYER), KC_LEFT, KC_DOWN, KC_RGHT),
 	[QWERTY_LAYER] = LAYOUT_planck_mit(
                 KC_ESC, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_BSPC,
                 KC_TAB, KC_A, KC_S, KC_D, KC_F, KC_G, KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_ENT,
                 KC_Z, KC_LSFT, KC_X, KC_C, KC_V, KC_B, KC_N, KC_M, KC_COMM, KC_DOT, KC_UP, MT(MOD_RSFT, KC_SLSH),
-                KC_LCTL, KC_LALT, MO(FN_LAYER), LM(GUI_LAYER, MOD_LGUI), LOWER_OR_ONE, KC_SPC, MO(RAISE_LAYER), MO(NAV_LAYER), KC_LEFT, KC_DOWN, KC_RGHT),
+                KC_LCTL, REAL_ALT, MO(FN_LAYER), LM(GUI_LAYER, MOD_LGUI), LOWER_OR_ONE, KC_SPC, MO(RAISE_LAYER), MO(NAV_LAYER), KC_LEFT, KC_DOWN, KC_RGHT),
 	[GUI_LAYER] = LAYOUT_planck_mit(
                 KC_GRV, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_BSPC,
                 KC_TAB, KC_A, KC_S, KC_D, KC_F, KC_G, KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_ENT,
@@ -270,7 +291,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, MO(NAV2_LAYER), KC_TRNS, KC_TRNS, KC_TRNS),
 	[RAISE_LAYER] = LAYOUT_planck_mit(
                 RSFT(KC_GRV), RCTL(KC_Q), RCTL(KC_W), RCTL(KC_E), RCTL(KC_R), RCTL(KC_T), RSFT(KC_BSLS), RSFT(KC_EQL), RSFT(KC_LBRC), RSFT(KC_RBRC), RSFT(KC_QUOT), RCTL(KC_BACKSPACE),
-                KC_TRNS, RSFT(KC_1), RSFT(KC_2), RSFT(KC_3), RSFT(KC_4), RSFT(KC_5), RSFT(KC_6), RSFT(KC_7), RSFT(KC_8), RSFT(KC_9), RSFT(KC_0), KC_TRNS,
+                LALT(KC_TAB), RSFT(KC_1), RSFT(KC_2), RSFT(KC_3), RSFT(KC_4), RSFT(KC_5), RSFT(KC_6), RSFT(KC_7), RSFT(KC_8), RSFT(KC_9), RSFT(KC_0), KC_TRNS,
                 RCTL(KC_Z), KC_LSFT, RCTL(KC_X), RCTL(KC_C), RCTL(KC_V), RCTL(KC_B), KC_TRNS, KC_MINS, RSFT(KC_COMM), RSFT(KC_DOT), KC_SCLN, MT(MOD_RSFT, RAISE_SLASH),
                 KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, MO(NAV2_LAYER), KC_TRNS, KC_TRNS, KC_TRNS),
 	[NAV_LAYER] = LAYOUT_planck_mit(
