@@ -261,7 +261,7 @@ void keyboard_post_init_user(void) {
     chars_typed      = user_stats.hundred_chars_typed * 100 + 50;
     backspaces_typed = user_stats.ten_backspaces_typed * 10 + 5;
 
-    rgblight_mode_noeeprom(16);
+    rgblight_mode_noeeprom(17);
 }
 
 
