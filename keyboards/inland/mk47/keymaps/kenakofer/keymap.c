@@ -262,6 +262,9 @@ void keyboard_post_init_user(void) {
     backspaces_typed = user_stats.ten_backspaces_typed * 10 + 5;
 
     rgblight_mode_noeeprom(17);
+    
+    // Set default layer to QWERTY instead of COLEMAK
+    set_single_persistent_default_layer(QWERTY_LAYER);
 }
 
 
